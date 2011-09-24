@@ -21,6 +21,9 @@ describe Roku,"invalid connection" do
     @t = Roku.new
   end
   it "should not connect" do
-    @t.connect("1.2.3.4",1).should == false
+    begin
+      @t.connect("1.2.3.4",5555).should == false
+    rescue Timeout::Error
+    end
   end
 end

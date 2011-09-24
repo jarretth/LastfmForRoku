@@ -1,4 +1,5 @@
 require 'socket'
+require 'timeout'
 
 class Roku
   attr_accessor :connected
@@ -9,12 +10,16 @@ class Roku
   end
   
   def connect(ip,port)
-    @socket = TCPSocket.new(ip,port)
-    @connected = true
-  rescue => e
-    puts "Unable to connect to #{ip}:#{port}"
-    puts e.message
-    @connected = false
+    begin
+      timeout(5) do
+        @socket = TCPSocket.new(ip,port)
+      end
+      @connected = true
+    rescue => e
+      puts "Unable to connect to #{ip}:#{port}"
+      puts e.message
+      @connected = false
+    end
   end
   
   def recieve
