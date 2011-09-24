@@ -38,10 +38,23 @@ class Roku
     begin
       timeout(5) {
         @socket.send("GetCurrentSongInfo\r\n",0)
-        sleep(0.3)
+        sleep(0.2)
         while (d=@socket.readline.chomp.split(": "))[1] != "OK"
           song[d[1].sub(' ', '').sub(/\[(\d+)\]/,'\1').to_sym] = d[2]
         end
+        @socket.send("GetElapsedTime\r\n",0)
+        sleep(0.2)
+        a = (@socket.recv(1000).chomp.split(": "))[1]
+        if a.eql? "GenericError"
+          return song
+        end
+        a = a.split(":").collect {|e| e.to_i}
+        song[:elapsedtime] = a[0]*3600+a[1]*60+a[2]
+        @socket.send("GetTotalTime\r\n",0)
+        sleep(0.2)
+        a = (@socket.recv(1000).chomp.split(": "))[1]
+        a = a.split(":").collect {|e| e.to_i}
+        song[:totaltime] = a[0]*3600+a[1]*60+a[2]
       }
     rescue Timeout::Error
       @connected = false
