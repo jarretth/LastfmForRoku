@@ -19,7 +19,7 @@ password = "MyLASTFMPassword"
 </pre>
 line with:
 <pre>
-	authstring ="md5"
+authstring ="md5"
 </pre>
 
 After that just run it with ./l4r.rb
