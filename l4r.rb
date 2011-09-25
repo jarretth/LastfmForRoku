@@ -1,3 +1,4 @@
+#!/usr/bin/env ruby
 require './lib/roku.rb'
 require './lib/lastfm.rb'
 require './lib/l4rhelper.rb'
