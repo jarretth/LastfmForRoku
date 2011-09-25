@@ -27,19 +27,18 @@ begin
   while 1
     a =  r.getCurrentSong
     if a.nil? == false && a[:id].nil? == false
-      puts "we have a song((#{a[:id]})#{a[:artist]} - #{a[:title]})"
+      #puts "we have a song((#{a[:id]})#{a[:artist]} - #{a[:title]})"
       #if it's a new song, send nowPlaying to last.fm, mark the song
       if currentsong != a[:id]
         sent = false
         currentsong = a[:id]
         sleeptime = 30
-        puts "send initial update to last.fm"
+        puts "error updating Now Playing" unless l.updateNowPlaying(a)
       #if it's the same song, but we haven't scrobbled it yet
       elsif sent == false
         #check if it is half way though, or 4 minutes through
         if a[:elapsedtime] >= (a[:totaltime]/2) || a[:elapsedtime] >= 240
-          #scrobble
-          puts "send final to last.fm"
+          puts "error scrobbling" unless l.scrobble(a)
           #sleep until the end of the song or the next 30 seconds
           sleeptime = (a[:totaltime]-a[:elapsedtime] > 30) ? 30 : (a[:totaltime]-a[:elapsedtime])+1
           sent = true
@@ -54,7 +53,7 @@ begin
         sleeptime = (a[:totaltime]-a[:elapsedtime] > 30) ? 30 : (a[:totaltime]-a[:elapsedtime])+1
       end
     else
-      puts "we have no song"
+      #puts "we have no song"
       currentsong = 0
       sleeptime = 30
     end

@@ -56,7 +56,27 @@ class LastFM
       return false
     end
     return true
-  end  
+  end
+  
+  def scrobble(songInfo)
+    return false if @sessionkey.nil?
+    params = {
+      :track => songInfo[:title],
+      :timestamp => (Time.now.to_i - songInfo[:elapsedtime]),
+      :artist => songInfo[:artist],
+      :album => songInfo[:album],
+      :trackNumber => songInfo[:trackNumber],
+      :duration => songInfo[:totaltime],
+      :sk => @sessionkey
+      }
+    params[:api_sig] = methodSignature("track.scrobble",params)
+    doc = domethod("track.scrobble",params)
+    unless doc.root.attributes['status'].eql? "ok"
+      puts doc.root.elements['error'].text
+      return false
+    end
+    true
+  end
   
   def methodSignature(method,params)
     params = params.dup
