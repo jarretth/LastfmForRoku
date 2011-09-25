@@ -1,5 +1,6 @@
 require 'net/http'
 require 'uri'
+require 'open-uri'
 require 'digest/md5'
 
 class LastFM
@@ -24,7 +25,12 @@ class LastFM
       end
     end
     args += "&api_key=#{@apikey}"
-    url = @@api_base + args
-    puts url
+    args.gsub!(' ', '%20')
+    puts url = @@api_base + args
+    open(url,'User-Agent'=>'Lastfm4Roku') { |f|
+      while !f.eof?
+        puts f.readline.chomp
+      end
+      }
   end
 end
