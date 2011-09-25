@@ -18,8 +18,8 @@ configfile.close
 
 r = Roku.new.connect config[:rokuaddress]
 l = LastFM.new('8f59d390f035d1151fce83e5a0d80e9a', '4c1998ae9519a3116bcac62b769907a8')
-l.auth(config[:username],config[:password],config[:authstring])
-
+error = l.auth(config[:username],config[:password],config[:authstring])
+raise "Last.fm returned an error #{error} while trying to authenticate" unless error.eql? config[:username]
 begin
   currentsong = 0
   sent = false
