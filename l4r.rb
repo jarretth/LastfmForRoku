@@ -11,13 +11,15 @@ while !configfile.eof?
   config[line[0].to_sym] = line[1]
 end
 testconfig(config,:username)
-testconfig(config,:password)
+abort "Must have a password or authstring in config/config.rb" if config[:password].nil? && config[:authstring].nil?
 testconfig(config,:rokuaddress)
 configfile.close
 
 
 r = Roku.new.connect config[:rokuaddress]
 l = LastFM.new('8f59d390f035d1151fce83e5a0d80e9a', '4c1998ae9519a3116bcac62b769907a8')
+l.auth(config[:username],config[:password],config[:authstring])
+
 begin
   currentsong = 0
   sent = false
