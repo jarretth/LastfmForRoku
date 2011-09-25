@@ -1,11 +1,16 @@
 require 'net/http'
 require 'uri'
+require 'digest/md5'
 
 class LastFM
   @@api_base = "http://ws.audioscrobbler.com/2.0/?"
   def initialize(apikey,secret)
     @apikey = apikey
-    @secret = secret
+    @secret = secret #not so secret anymore
+  end
+  
+  def auth_key(username,password)
+    puts Digest::MD5.hexdigest(username + Digest::MD5.hexdigest(password))
   end
   
   def domethod(method,*hash)

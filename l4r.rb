@@ -1,13 +1,30 @@
 require './lib/roku.rb'
+require './lib/lastfm.rb'
+require './lib/l4rhelper.rb'
+include L4RHelper
 
-r = Roku.new.connect '192.168.2.126'
+
+configfile = File.open('config/config.rb', "r")
+config = {}
+while !configfile.eof?
+  line = configfile.readline.chomp.split("=").collect { |val| val.strip.gsub('"','') }
+  config[line[0].to_sym] = line[1]
+end
+testconfig(config,:username)
+testconfig(config,:password)
+testconfig(config,:rokuaddress)
+configfile.close
+
+
+r = Roku.new.connect config[:rokuaddress]
+l = LastFM.new('8f59d390f035d1151fce83e5a0d80e9a', '4c1998ae9519a3116bcac62b769907a8')
 begin
   currentsong = 0
   sent = false
   sleeptime = 30
   while 1
-    a = r.getCurrentSong
-    if a[:id].nil? == false
+    a =  r.getCurrentSong
+    if a.nil? == false && a[:id].nil? == false
       puts "we have a song((#{a[:id]})#{a[:artist]} - #{a[:title]})"
       #if it's a new song, send nowPlaying to last.fm, mark the song
       if currentsong != a[:id]
@@ -44,6 +61,6 @@ begin
 rescue RuntimeError
   puts "Disconnected! Retrying in 30 seconds"
   sleep(30)
-  r = Roku.new.connect '192.168.2.126'
+  r = Roku.new.connect config[:rokuaddress]
   retry
 end

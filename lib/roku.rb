@@ -39,7 +39,7 @@ class Roku
       timeout(5) {
         @socket.send("GetCurrentSongInfo\r\n",0)
         sleep(0.2)
-        while (d=@socket.readline.chomp.split(": "))[1] != "OK"
+        while (d=@socket.readline.chomp.split(": "))[1] != "OK" && d[1] != "GenericError"
           song[d[1].sub(' ', '').sub(/\[(\d+)\]/,'\1').to_sym] = d[2]
         end
         @socket.send("GetElapsedTime\r\n",0)
