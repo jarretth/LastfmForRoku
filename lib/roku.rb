@@ -45,7 +45,7 @@ class Roku
         @socket.send("GetElapsedTime\r\n",0)
         sleep(0.2)
         a = (@socket.recv(1000).chomp.split(": "))[1]
-        if a.nil? || a.eql? "GenericError"
+        if (a.nil? || a.eql?("GenericError"))
           return song
         end
         a = a.split(":").collect {|e| e.to_i}
