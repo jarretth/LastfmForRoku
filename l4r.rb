@@ -20,42 +20,28 @@ r = Roku.new.connect config[:rokuaddress]
 l = LastFM.new('8f59d390f035d1151fce83e5a0d80e9a', '4c1998ae9519a3116bcac62b769907a8')
 error = l.auth(config[:username],config[:password],config[:authstring])
 raise "Last.fm returned an error #{error} while trying to authenticate" unless error.eql? config[:username]
+puts "Error connecting to the Roku, continuing connect attempt" unless r.connected
 begin
-  currentsong = 0
-  sent = false
+  currentsong = {}
   sleeptime = 30
   while 1
     a =  r.getCurrentSong
-    if a.nil? == false && a[:id].nil? == false
-      #puts "we have a song((#{a[:id]})#{a[:artist]} - #{a[:title]})"
-      #if it's a new song, send nowPlaying to last.fm, mark the song
-      if currentsong != a[:id]
-        sent = false
-        currentsong = a[:id]
-        sleeptime = 30
-        puts "error updating Now Playing" unless l.updateNowPlaying(a)
-      #if it's the same song, but we haven't scrobbled it yet
-      elsif sent == false
-        #check if it is half way though, or 4 minutes through
-        if a[:elapsedtime] >= (a[:totaltime]/2) || a[:elapsedtime] >= 240
-          puts "error scrobbling" unless l.scrobble(a)
-          #sleep until the end of the song or the next 30 seconds
-          sleeptime = (a[:totaltime]-a[:elapsedtime] > 30) ? 30 : (a[:totaltime]-a[:elapsedtime])+1
-          sent = true
-        else
-          #sleep for the time until half of the song or 30s, whichever comes first
-          dif = (a[:totaltime]/2 - a[:elapsedtime])+1
-          sleeptime = (dif <= 0) ? 30 : ((dif>30) ? 30 : dif) 
-        end
-      #it the same song we've already sent
-      else
-        #sleep until min(30s,end time)
-        sleeptime = (a[:totaltime]-a[:elapsedtime] > 30) ? 30 : (a[:totaltime]-a[:elapsedtime])+1
+    if currentsong[:id] != a[:id]
+      #scrobble on song change - this should the scrobble showing up alongside the now playing
+      if !(currentsong[:id].nil?) && 
+        validScrobbleTime(currentsong[:elapsedtime],currentsong[:totaltime])==0 
+          puts "#{Time.now.ctime} - Error Scrobbling" unless l.scrobble(currentsong)
       end
-    else
-      #puts "we have no song"
-      currentsong = 0
-      sleeptime = 30
+      unless a[:id].nil?
+        puts "#{Time.now.ctime} - Error updating Now Playing" unless l.updateNowPlaying(a)
+      end
+    end
+    currentsong = a
+    dif = validScrobbleTime(currentsong[:elapsedtime],currentsong[:totaltime])
+    if dif==0 #this will scrobble on the next change
+      sleeptime = [(currentsong[:totaltime] - currentsong[:elapsedtime])+1,30].min
+    else #We need to still catch this before it scrobbles
+      sleeptime = [dif,30].min
     end
     sleep(sleeptime)
   end
@@ -65,3 +51,5 @@ rescue RuntimeError
   r = Roku.new.connect config[:rokuaddress]
   retry
 end
+
+
