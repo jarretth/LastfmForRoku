@@ -24,8 +24,8 @@ raise "Last.fm returned an error #{error} while trying to authenticate" unless e
 puts "Error connecting to the Roku, continuing connect attempt" unless r.connected
 begin
   currentsong = {}
-  sleeptime = 30
   while 1
+    sleeptime = 30
     a =  r.getCurrentSong
     if currentsong[:id] != a[:id]
       #scrobble on song change - this should the scrobble showing up alongside the now playing

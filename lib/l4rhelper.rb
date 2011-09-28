@@ -4,16 +4,22 @@ module L4RHelper
   end
   
   def validScrobbleTime(elapsed,total)
+    return 30 if (elapsed.nil? || total.nil?)
     #Half of the total time or 4 minutes, given the total time is greater than 30s
     #returns 0 if valid scrobble, time until a valid scrobble otherwise
     retval = 0
-    if total > 30 &&
-      ((total/2 >= elapsed) || (elapsed >= 240))
-      retval = 0
-    elsif total < 30
-      retval=((total-elapsed)==0) ? 1 : (total-elapsed)
+    if total > 30
+      if ((total/2 <= elapsed) || (elapsed >= 240))
+        retval = 0
+      else
+        retval = (total/2) - elapsed
+      end
     else
-      retval=(total/2)-elapsed
+      if (total-elapsed) <= 0
+        retval = 1
+      else
+        retval = total-elapsed
+      end
     end
     retval
   end
