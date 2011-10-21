@@ -44,7 +44,8 @@ begin
     else #We need to still catch this before it scrobbles
       sleeptime = [dif,30].min
     end
-    sleep(sleeptime)
+    sleeptime = 1 if sleeptime <= 0
+    sleep(sleeptime) 
   end
 rescue RuntimeError
   puts "Disconnected! Retrying in 30 seconds"
