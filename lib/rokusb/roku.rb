@@ -39,9 +39,9 @@ class Roku
       timeout(5) {
         @socket.send("GetCurrentSongInfo\r\n",0)
         sleep(0.2)
-        while (d=@socket.recv(1000).chomp.split(": "))[1] != "OK" && d[1] != "GenericError"
-          song[d[1].sub(' ', '').sub(/\[(\d+)\]/,'\1').to_sym] = d[2]
-        end
+        d=@socket.recv(1000)
+        d = d.split("\r\n").collect() {|x| y=x.split(': '); {y[1].to_sym=>y[2]}}
+        song = d.inject({}) {|rem,obj| rem.merge obj}
         @socket.send("GetElapsedTime\r\n",0)
         sleep(0.2)
         a = (@socket.recv(1000).chomp.split(": "))[1]
@@ -59,12 +59,13 @@ class Roku
         a = a.split(":").collect {|e| e.to_i}
         song[:totaltime] = a[0]*3600+a[1]*60+a[2]
       }
-    rescue Timeout::Error
+    rescue Timeout::Error => e
       @connected = false
       @socket.close
       @socket = nil
       raise "Unexpected disconnection"
     end
+    #p song
     song   
   end
   

@@ -45,9 +45,10 @@ begin
       sleeptime = [dif,30].min
     end
     sleeptime = 1 if sleeptime <= 0
+    #p sleeptime
     sleep(sleeptime) 
   end
-rescue RuntimeError
+rescue RuntimeError => e
   puts "Disconnected! Retrying in 30 seconds"
   sleep(30)
   r = Roku.new.connect config[:rokuaddress]
