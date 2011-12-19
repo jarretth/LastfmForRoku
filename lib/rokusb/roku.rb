@@ -39,9 +39,23 @@ class Roku
       timeout(5) {
         @socket.send("GetCurrentSongInfo\r\n",0)
         sleep(0.2)
-        d=@socket.recv(1000)
-        d = d.split("\r\n").collect() {|x| y=x.split(': '); {y[1].to_sym=>y[2]}}
-        song = d.inject({}) {|rem,obj| rem.merge obj}
+        d=@socket.recv(1000).chomp
+        return {} if d.nil? || (d =~ /.*GenericError.*/) || !(d =~ /.*OK.*/)
+        d = d.split("\r\n").collect() do
+          |x| y=x.split(': ');
+          if !y[1].nil?
+            {y[1].to_sym=>y[2]}
+          else
+            nil
+          end
+        end
+        song = d.inject({}) do |rem,obj| 
+          if obj.nil?
+            rem
+          else
+            rem.merge obj
+          end
+        end
         @socket.send("GetElapsedTime\r\n",0)
         sleep(0.2)
         a = (@socket.recv(1000).chomp.split(": "))[1]
@@ -49,7 +63,7 @@ class Roku
           return song
         end
         a = a.split(":").collect {|e| e.to_i}
-        song[:elapsedtime] = a[0]*3600+a[1]*60+a[2]
+        song[:elapsedtime] = (a[0]||0)*3600+(a[1]||0)*60+(a[2]||0)
         @socket.send("GetTotalTime\r\n",0)
         sleep(0.2)
         a = (@socket.recv(1000).chomp.split(": "))[1]
@@ -57,7 +71,7 @@ class Roku
           return song
         end
         a = a.split(":").collect {|e| e.to_i}
-        song[:totaltime] = a[0]*3600+a[1]*60+a[2]
+        song[:totaltime] = (a[0]||0)*3600+(a[1]||0)*60+(a[2]||0)
       }
     rescue Timeout::Error => e
       @connected = false
