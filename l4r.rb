@@ -25,6 +25,7 @@ puts "Error connecting to the Roku, continuing connect attempt" unless r.connect
 begin
   currentsong = {}
   while 1
+    raise "Unexpected disconnection" if r.nil?
     sleeptime = 30
     a =  r.getCurrentSong
     if currentsong[:id] != a[:id]
